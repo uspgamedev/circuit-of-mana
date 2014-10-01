@@ -7,7 +7,7 @@
 using std::unique_ptr;
 
 int main(int argc, char* argv[]) {
-    assert(ugdk::system::Initialize());
+    ugdk::system::Initialize();
     ugdk::action::Scene* ourscene = new ugdk::action::Scene;
     ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
         [ourscene](const ugdk::input::KeyPressedEvent& ev) {

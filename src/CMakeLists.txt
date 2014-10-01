@@ -4,3 +4,5 @@ if (CMAKE_COMPILER_IS_GNUCC)
 endif ()
 
 add_ugdk_executable(circuit-of-mana main.cc)
+set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -lXt -ldl")
+
