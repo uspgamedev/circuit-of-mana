@@ -20,30 +20,16 @@ endif ()
 
 add_custom_target (
   assets
-  COMMAND ${CMAKE_COMMAND} -E remove_directory
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/spritesheets
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          ${CMAKE_CURRENT_BINARY_DIR}/src/assets        
   COMMAND ${GIT_EXECUTABLE} archive
-          --remote=git://uspgamedev.org/circuit-ugdk-resources.git
-          -o ${CMAKE_CURRENT_BINARY_DIR}/assets/resources.tar.gz
-          master resources/
-  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_CURRENT_BINARY_DIR}/assets/resources.tar.gz
-          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/assets/
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/resources/spritesheets/
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/spritesheets/
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/resources/maps/
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/maps/
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/resources/fonts/
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/fonts/
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/resources/animations/
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/animations/
-  COMMAND ${CMAKE_COMMAND} -E remove_directory
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/resources/
+          --remote=git://uspgamedev.org/circuit-resources.git
+          -o ${CMAKE_CURRENT_BINARY_DIR}/resources.tar.gz
+          master assets/
+  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_CURRENT_BINARY_DIR}/resources.tar.gz
+          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src/
   COMMAND ${CMAKE_COMMAND} -E remove
-          ${CMAKE_CURRENT_BINARY_DIR}/assets/resources.tar.gz
+          ${CMAKE_CURRENT_BINARY_DIR}/resources.tar.gz
 )
 
 add_subdirectory(${UGDK_SUBDIR})
