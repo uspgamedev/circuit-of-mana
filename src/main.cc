@@ -1,9 +1,9 @@
 
 #include <ugdk/system/engine.h>
-#include <ugdk/action/3D/ogrescene.h>
-#include <ugdk/action/3D/ogreentity.h>
 #include <ugdk/action/3D/camera.h>
 #include <ugdk/input/events.h>
+#include <bulletworks/object.h>
+#include <bulletworks/physicscene.h>
 #include <memory>
 
 #include <OgreCamera.h>
@@ -20,17 +20,13 @@
 
 using std::unique_ptr;
 
-ugdk::action::mode3d::OgreScene *ourscene;
-
-struct mahentity : public ugdk::action::mode3d::OgreEntity {
-  void set_node(Ogre::SceneNode* n) { node_ = n; }
-};
+bulletworks::PhysicScene *ourscene;
 
 int main(int argc, char* argv[]) {
     ugdk::system::Configuration config;
     config.base_path = "assets/";
     ugdk::system::Initialize(config);
-    ourscene = new ugdk::action::mode3d::OgreScene;
+    ourscene = new bulletworks::PhysicScene(btVector3(0, 0, 0));
     double delay = 5.0;
     ourscene->AddTask(ugdk::system::Task(
         [&delay](double dt) {
@@ -39,24 +35,26 @@ int main(int argc, char* argv[]) {
         }));
 
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
-    auto head = mSceneMgr->createEntity("Head", "ogrehead.mesh");
-    auto head2 = mSceneMgr->createEntity("Head2", "ogrehead.mesh");
-    auto node = mSceneMgr->getRootSceneNode()->createChildSceneNode("HeadNode");
-    auto node2 = mSceneMgr->getRootSceneNode()->createChildSceneNode("HeadNode2");
-    node->attachObject(head);
-    node2->attachObject(head2);
-    node2->setPosition(Ogre::Vector3(0, 0, 80));
 
-    mahentity* mah = new mahentity;
-    mah->set_node(node2);
-    ourscene->camera()->AttachTo(mah);
+    bulletworks::Object::PhysicsData head1data;
+    auto head1 = new bulletworks::Object(mSceneMgr->createEntity("Head", "ogrehead.mesh"), head1data);
+    head1->AddToScene(ourscene);
+    head1->node()->setPosition(0, 0, 0);
+
+    bulletworks::Object::PhysicsData head2data;
+    auto head2 = new bulletworks::Object(mSceneMgr->createEntity("Head2", "ogrehead.mesh"), head2data);
+    head2->AddToScene(ourscene);
+    head2->node()->setPosition(0, 0, 80);
+
+    ourscene->camera()->AttachTo(head2);
+    //ourscene->camera()->SetDistance(50);
 
     ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
-        [node] (const ugdk::input::KeyPressedEvent& ev) -> void {
+        [head1] (const ugdk::input::KeyPressedEvent& ev) -> void {
             if (ev.scancode == ugdk::input::Scancode::RIGHT)
-                node->translate(10.0, 0.0, 0.0);
+                head1->Translate(10.0, 0.0, 0.0);
             else if (ev.scancode == ugdk::input::Scancode::LEFT)
-                node->translate(-10.0, 0.0, 0.0);
+                head1->Translate(-10.0, 0.0, 0.0);
         });
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.6, .6, .6));
