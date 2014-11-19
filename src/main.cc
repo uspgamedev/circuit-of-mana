@@ -51,7 +51,15 @@ int main(int argc, char* argv[]) {
     mah->set_node(node2);
     ourscene->camera()->AttachTo(mah);
 
-    mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
+    ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
+        [ourscene, node] (const ugdk::input::KeyPressedEvent& ev) -> void {
+            if (ev.scancode == ugdk::input::Scancode::RIGHT)
+                node->translate(10.0, 0.0, 0.0);
+            else if (ev.scancode == ugdk::input::Scancode::LEFT)
+                node->translate(-10.0, 0.0, 0.0);
+        });
+
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.6, .6, .6));
 
     ugdk::system::PushScene(unique_ptr<ugdk::action::Scene>(ourscene));
     ugdk::system::Run();
