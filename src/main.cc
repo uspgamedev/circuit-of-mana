@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     ourscene->camera()->AttachTo(mah);
 
     ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
-        [ourscene, node] (const ugdk::input::KeyPressedEvent& ev) -> void {
+        [node] (const ugdk::input::KeyPressedEvent& ev) -> void {
             if (ev.scancode == ugdk::input::Scancode::RIGHT)
                 node->translate(10.0, 0.0, 0.0);
             else if (ev.scancode == ugdk::input::Scancode::LEFT)
