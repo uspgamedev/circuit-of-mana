@@ -4,6 +4,8 @@
 #include <ugdk/input/events.h>
 #include <bulletworks/object.h>
 #include <bulletworks/physicscene.h>
+#include <bulletworks/manager.h>
+#include <BtOgreGP.h>
 #include <memory>
 
 #include <OgreCamera.h>
@@ -22,26 +24,40 @@ using std::unique_ptr;
 
 bulletworks::PhysicScene *ourscene;
 
+#define BIT(x) (1<<(x))
+enum CollisionGroup {
+    HEADS = BIT(6),
+    WAT1 = BIT(7),
+    WAT2 = BIT(8),
+    WAT3 = BIT(9),
+    WAT4 = BIT(10)
+};
+
 int main(int argc, char* argv[]) {
     ugdk::system::Configuration config;
     config.base_path = "assets/";
     ugdk::system::Initialize(config);
     ourscene = new bulletworks::PhysicScene(btVector3(0, 0, 0));
-    double delay = 5.0;
-    ourscene->AddTask(ugdk::system::Task(
-        [&delay](double dt) {
-          if ((delay -= dt) < 0)
-              ourscene->Finish();
-        }));
+    ourscene->physics_manager()->set_debug_draw_enabled(true);
 
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
 
     bulletworks::Object::PhysicsData head1data;
-    auto head1 = new bulletworks::Object(mSceneMgr->createEntity("Head", "ogrehead.mesh"), head1data);
+    auto head1ent = mSceneMgr->createEntity("Head", "ogrehead.mesh");
+    auto meshShapeConv = BtOgre::StaticMeshToShapeConverter(head1ent);
+    head1data.shape = meshShapeConv.createSphere();
+    head1data.mass = 10;
+    head1data.collision_group = CollisionGroup::HEADS;
+    head1data.collides_with = CollisionGroup::HEADS;
+    auto head1 = new bulletworks::Object(head1ent, head1data);
     head1->AddToScene(ourscene);
-    head1->node()->setPosition(0, 0, 0);
+    //head1->node()->setPosition(0, 0, 0);
 
     bulletworks::Object::PhysicsData head2data;
+    /*head2data.shape = meshShapeConv.createBox();
+    head2data.mass = 10;
+    head2data.collision_group = CollisionGroup::HEADS;
+    head2data.collides_with = CollisionGroup::HEADS;*/
     auto head2 = new bulletworks::Object(mSceneMgr->createEntity("Head2", "ogrehead.mesh"), head2data);
     head2->AddToScene(ourscene);
     head2->node()->setPosition(0, 0, 80);
@@ -52,9 +68,11 @@ int main(int argc, char* argv[]) {
     ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
         [head1] (const ugdk::input::KeyPressedEvent& ev) -> void {
             if (ev.scancode == ugdk::input::Scancode::RIGHT)
-                head1->Translate(10.0, 0.0, 0.0);
+                head1->Move(10.0, 0.0, 0.0);
             else if (ev.scancode == ugdk::input::Scancode::LEFT)
-                head1->Translate(-10.0, 0.0, 0.0);
+                head1->Move(-10.0, 0.0, 0.0);
+            else if (ev.scancode == ugdk::input::Scancode::ESCAPE)
+                ourscene->Finish();
         });
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.6, .6, .6));
