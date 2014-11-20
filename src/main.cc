@@ -2,6 +2,7 @@
 #include <ugdk/system/engine.h>
 #include <ugdk/action/3D/camera.h>
 #include <ugdk/input/events.h>
+#include <ugdk/input/module.h>
 #include <bulletworks/object.h>
 #include <bulletworks/physicscene.h>
 #include <bulletworks/manager.h>
@@ -79,7 +80,9 @@ int main(int argc, char* argv[]) {
     config.base_path = "assets/";
     ugdk::system::Initialize(config);
     ourscene = new bulletworks::PhysicScene(btVector3(0, -10, 0));
+    
     ourscene->physics_manager()->set_debug_draw_enabled(true);
+    ourscene->ShowFrameStats();
 
     auto head1 = createOgreHead("Head");
     auto head2 = createOgreHead("Head2", true);
@@ -92,18 +95,34 @@ int main(int argc, char* argv[]) {
 
     createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
 
+    ourscene->AddTask(ugdk::system::Task(
+    [head2](double dt) {
+        auto& keyboard = ugdk::input::manager()->keyboard();
+        Ogre::Vector3 move = Ogre::Vector3::ZERO;
+        if (keyboard.IsDown(ugdk::input::Scancode::D))
+            move.x += 1.0;
+        else if (keyboard.IsDown(ugdk::input::Scancode::A))
+            move.x += -1.0;
+        if (keyboard.IsDown(ugdk::input::Scancode::W))
+            move.z += -1.0;
+        else if (keyboard.IsDown(ugdk::input::Scancode::S))
+            move.z += 1.0;
+
+        move.normalise();
+        move = ourscene->camera()->actual_orientation() * move;
+        move.normalise();
+        head2->Move( move * 10 );
+    }
+    ));
+
     ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
         [head2] (const ugdk::input::KeyPressedEvent& ev) -> void {
-            if (ev.scancode == ugdk::input::Scancode::RIGHT)
-                head2->Move(10.0, 0.0, 0.0);
-            else if (ev.scancode == ugdk::input::Scancode::LEFT)
-                head2->Move(-10.0, 0.0, 0.0);
-            else if (ev.scancode == ugdk::input::Scancode::UP)
-                head2->Move(0.0, 0.0, -10.0);
-            else if (ev.scancode == ugdk::input::Scancode::DOWN)
-                head2->Move(0.0, 0.0, 10.0);
-            else if (ev.scancode == ugdk::input::Scancode::ESCAPE)
+            if (ev.scancode == ugdk::input::Scancode::ESCAPE)
                 ourscene->Finish();
+        });
+    ourscene->event_handler().AddListener<ugdk::input::MouseMotionEvent>(
+        [](const ugdk::input::MouseMotionEvent& ev) -> void {
+            ourscene->camera()->Rotate(-ev.motion.x, -ev.motion.y);
         });
 
     ourscene->manager()->setAmbientLight(Ogre::ColourValue(0.7, .7, .7));
