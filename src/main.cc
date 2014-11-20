@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     head1data.collides_with = CollisionGroup::HEADS;
     auto head1 = new bulletworks::Object(head1ent, head1data);
     head1->AddToScene(ourscene);
-    //head1->node()->setPosition(0, 0, 0);
+    head1->Scale(0.5, 0.5, 0.5);
 
     bulletworks::Object::PhysicsData head2data;
     head2data.shape = meshShapeConv.createBox();
@@ -61,21 +61,22 @@ int main(int argc, char* argv[]) {
     auto head2 = new bulletworks::Object(mSceneMgr->createEntity("Head2", "ogrehead.mesh"), head2data);
     head2->AddToScene(ourscene);
     head2->Translate(0, 0, 80);
+    head2->Scale(0.5, 0.5, 0.5);
 
     ourscene->camera()->AttachTo(head2);
     ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
-    ourscene->camera()->SetDistance(50);
+    //ourscene->camera()->SetDistance(50);
 
     ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
-        [head1] (const ugdk::input::KeyPressedEvent& ev) -> void {
+        [head2] (const ugdk::input::KeyPressedEvent& ev) -> void {
             if (ev.scancode == ugdk::input::Scancode::RIGHT)
-                head1->Move(10.0, 0.0, 0.0);
+                head2->Move(10.0, 0.0, 0.0);
             else if (ev.scancode == ugdk::input::Scancode::LEFT)
-                head1->Move(-10.0, 0.0, 0.0);
+                head2->Move(-10.0, 0.0, 0.0);
             else if (ev.scancode == ugdk::input::Scancode::UP)
-                head1->Move(0.0, 0.0, 10.0);
+                head2->Move(0.0, 0.0, -10.0);
             else if (ev.scancode == ugdk::input::Scancode::DOWN)
-                head1->Move(0.0, 0.0, -10.0);
+                head2->Move(0.0, 0.0, 10.0);
             else if (ev.scancode == ugdk::input::Scancode::ESCAPE)
                 ourscene->Finish();
         });
