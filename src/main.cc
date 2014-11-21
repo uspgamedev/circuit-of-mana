@@ -37,18 +37,18 @@ enum CollisionGroup {
 bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     bulletworks::Object::PhysicsData headData;
-    auto headEnt = mSceneMgr->createEntity(name, "ogrehead.mesh");
+    auto headEnt = mSceneMgr->createEntity(name, "Cube.mesh");
     auto meshShapeConv = BtOgre::StaticMeshToShapeConverter(headEnt);
     if (useBox)
         headData.shape = meshShapeConv.createBox();
     else
         headData.shape = meshShapeConv.createSphere();
-    headData.mass = 10;
+    headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
     auto head = new bulletworks::Object(headEnt, headData);
     head->AddToScene(ourscene);
-    head->Scale(0.4, 0.4, 0.4);
+    head->body()->setDamping(.4, .4);
     return head;
 }
 
@@ -71,7 +71,7 @@ bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& di
 
     auto wall = new bulletworks::Object(wallEnt, wallData);
     wall->AddToScene(ourscene);
-    wall->body()->setRestitution(0.6);
+    wall->body()->setFriction(1.7);
     return wall;
 }
 
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 
     ourscene->camera()->AttachTo(head2);
     ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
-    ourscene->camera()->SetDistance(100);
+    ourscene->camera()->SetDistance(10);
 
     createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
 
@@ -110,8 +110,9 @@ int main(int argc, char* argv[]) {
 
         move.normalise();
         move = ourscene->camera()->actual_orientation() * move;
+        move.y = 0.0;
         move.normalise();
-        head2->Move( move * 10 );
+        head2->Move( move * 20 );
     }
     ));
 
@@ -125,7 +126,7 @@ int main(int argc, char* argv[]) {
             ourscene->camera()->Rotate(-ev.motion.x, -ev.motion.y);
         });
 
-    ourscene->manager()->setAmbientLight(Ogre::ColourValue(0.7, .7, .7));
+    ourscene->manager()->setAmbientLight(Ogre::ColourValue(.4, .4, .4));
 
     ugdk::system::PushScene(unique_ptr<ugdk::action::Scene>(ourscene));
     ugdk::system::Run();
