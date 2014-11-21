@@ -46,7 +46,7 @@ bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) 
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
-    auto head = new bulletworks::Object(headEnt, headData);
+    auto head = new bulletworks::Object(*ourscene, headEnt, headData);
     head->AddToScene(ourscene);
     head->body()->setDamping(.4, .4);
     return head;
@@ -71,7 +71,7 @@ bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& di
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
 
-    auto wall = new bulletworks::Object(wallEnt, wallData);
+    auto wall = new bulletworks::Object(*ourscene, wallEnt, wallData);
     wall->AddToScene(ourscene);
     wall->body()->setFriction(1.7);
     return wall;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     head2->Translate(0, 0, 80);
     head2->body()->setAngularFactor(btVector3(0.0, 0.0, 0.0));
 
-    ourscene->camera()->AttachTo(head2);
+    ourscene->camera()->AttachTo(*head2);
     ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
     ourscene->camera()->SetDistance(10);
 
