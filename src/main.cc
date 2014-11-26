@@ -52,12 +52,14 @@ bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) 
     return head;
 }
 
-bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& dir, double dist, double width = AREA_RANGE, double height = AREA_RANGE) {
+bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& dir, double dist,
+                                double width = AREA_RANGE, double height = AREA_RANGE) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     Ogre::Plane plane(dir, dist);
 
-    Ogre::MeshManager::getSingleton().createPlane(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        plane, width, height, 5, 5, true, 1, 5, 5, dir.perpendicular());
+    Ogre::MeshManager::getSingleton().createPlane(
+                name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, width, height,
+                5, 5, true, 1, 5, 5, dir.perpendicular());
 
     const std::string wat = name + "Entity";
     Ogre::Entity* wallEnt = mSceneMgr->createEntity(wat, name);
