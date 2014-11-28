@@ -6,6 +6,7 @@
 #include <bulletworks/object.h>
 #include <bulletworks/physicscene.h>
 #include <bulletworks/manager.h>
+#include <bulletworks/component/physicsbody.h>
 #include <BtOgreGP.h>
 #include <memory>
 
@@ -22,6 +23,10 @@
 #define AREA_RANGE 200.0
 
 using std::unique_ptr;
+using std::shared_ptr;
+using std::make_shared;
+using bulletworks::component::PhysicsBody;
+using bulletworks::component::Body;
 
 bulletworks::PhysicScene *ourscene;
 
@@ -36,7 +41,7 @@ enum CollisionGroup {
 
 bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
-    bulletworks::Object::PhysicsData headData;
+    bulletworks::component::PhysicsBody::PhysicsData headData;
     auto headEnt = mSceneMgr->createEntity(name, "Cube.mesh");
     auto meshShapeConv = BtOgre::StaticMeshToShapeConverter(headEnt);
     if (useBox)
@@ -46,7 +51,8 @@ bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) 
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
-    auto head = new bulletworks::Object(*ourscene, headEnt, headData);
+    auto head = new bulletworks::Object(*ourscene, headEnt);
+    head->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), headData));
     head->AddToScene(ourscene);
     head->body()->setDamping(.4, .4);
     return head;
@@ -65,13 +71,13 @@ bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& di
     Ogre::Entity* wallEnt = mSceneMgr->createEntity(wat, name);
     wallEnt->setMaterialName("Ogre/Tusks");
     
-    bulletworks::Object::PhysicsData wallData;
+    bulletworks::component::PhysicsBody::PhysicsData wallData;
     wallData.shape = new btStaticPlaneShape(btVector3(dir.x, dir.y, dir.z), dist);
     wallData.mass = 0;
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
-
-    auto wall = new bulletworks::Object(*ourscene, wallEnt, wallData);
+    auto wall = new bulletworks::Object(*ourscene, wallEnt);
+    wall->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), wallData));
     wall->AddToScene(ourscene);
     wall->body()->setFriction(1.7);
     return wall;
@@ -83,13 +89,14 @@ int main(int argc, char* argv[]) {
     ugdk::system::Initialize(config);
     ourscene = new bulletworks::PhysicScene(btVector3(0, -10, 0));
     
-    ourscene->physics_manager()->set_debug_draw_enabled(true);
+    ourscene->physics_manager().set_debug_draw_enabled(true);
     ourscene->ShowFrameStats();
 
     auto head1 = createOgreHead("Head");
     auto head2 = createOgreHead("Head2", true);
-    head2->Translate(0, 0, 80);
-    head2->body()->setAngularFactor(btVector3(0.0, 0.0, 0.0));
+    auto body2 = head2->GetComponent<PhysicsBody>();
+    body2->Translate(0, 0, 80);
+    body2->set_angular_factor(0.0, 0.0, 0.0);
 
     ourscene->camera()->AttachTo(*head2);
     ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
@@ -98,7 +105,7 @@ int main(int argc, char* argv[]) {
     createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
 
     ourscene->AddTask(ugdk::system::Task(
-    [head2](double dt) {
+    [body2](double dt) {
         auto& keyboard = ugdk::input::manager()->keyboard();
         Ogre::Vector3 move = Ogre::Vector3::ZERO;
         if (keyboard.IsDown(ugdk::input::Scancode::D))
@@ -114,7 +121,7 @@ int main(int argc, char* argv[]) {
         move = ourscene->camera()->actual_orientation() * move;
         move.y = 0.0;
         move.normalise();
-        head2->Move( move * 20 );
+        body2->bulletworks::component::Body::Move((move * 10));
     }
     ));
 
