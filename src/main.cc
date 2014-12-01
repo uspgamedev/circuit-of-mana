@@ -121,7 +121,8 @@ int main(int argc, char* argv[]) {
         move = ourscene->camera()->actual_orientation() * move;
         move.y = 0.0;
         move.normalise();
-        body2->bulletworks::component::Body::Move((move * 10));
+
+        body2->Move((move * 10));
     }
     ));
 
