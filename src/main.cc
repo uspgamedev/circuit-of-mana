@@ -78,7 +78,7 @@ shared_ptr<bulletworks::Object> createWall(const std::string& name, const Ogre::
     auto wall = make_shared<bulletworks::Object>(*ourscene, wallEnt);
     wall->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), wallData));
     wall->AddToScene(ourscene);
-    dynamic_cast<PhysicsBody*>(wall->GetComponent<Body>())->body()->setFriction(1.7);
+    dynamic_cast<PhysicsBody*>(wall->GetComponent<Body>())->setFriction(1.7);
     return wall;
 }
 
