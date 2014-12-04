@@ -93,17 +93,17 @@ int main(int argc, char* argv[]) {
 
     {
 
-        auto head1 = createOgreHead("Head");
-        auto head2 = createOgreHead("Head2", true);
-        auto body2 = head2->component<Body>();
+        std::weak_ptr<bulletworks::Object> head1 = createOgreHead("Head");
+        std::weak_ptr<bulletworks::Object> head2 = createOgreHead("Head2", true);
+        auto body2 = head2.lock()->component<Body>();
         body2->Translate(0, 0, 80);
         body2->set_angular_factor(0.0, 0.0, 0.0);
 
-        ourscene->camera()->AttachTo(*head2);
+        ourscene->camera()->AttachTo(*head2.lock());
         ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
         ourscene->camera()->SetDistance(100);
 
-        auto floor = createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
+        createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
 
         ourscene->AddTask(ugdk::system::Task(
         [body2](double dt) {
@@ -123,25 +123,25 @@ int main(int argc, char* argv[]) {
             move.normalise();
 
             body2->Move((move * 10));
-        }
-        ));
+        }));
 
         ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
-            [head2] (const ugdk::input::KeyPressedEvent& ev) -> void {
+            [] (const ugdk::input::KeyPressedEvent& ev) -> void {
                 if (ev.scancode == ugdk::input::Scancode::ESCAPE)
                     ourscene->Finish();
             });
         ourscene->event_handler().AddListener<ugdk::input::MouseMotionEvent>(
-            [](const ugdk::input::MouseMotionEvent& ev) -> void {
+            [] (const ugdk::input::MouseMotionEvent& ev) -> void {
                 ourscene->camera()->Rotate(-ev.motion.x, -ev.motion.y);
             });
 
         ourscene->manager()->setAmbientLight(Ogre::ColourValue(0.7, .7, .7));
 
         ugdk::system::PushScene(unique_ptr<ugdk::action::Scene>(ourscene));
-        ugdk::system::Run();
+
     }
 
+    ugdk::system::Run();
     ugdk::system::Release();
     return 0;
 }

@@ -1,0 +1,35 @@
+15:39:16: Creating resource group General
+15:39:16: Creating resource group Internal
+15:39:16: Creating resource group Autodetect
+15:39:16: SceneManagerFactory for type 'DefaultSceneManager' registered.
+15:39:16: Registering ResourceManager for type Material
+15:39:16: Registering ResourceManager for type Mesh
+15:39:16: Registering ResourceManager for type Skeleton
+15:39:16: MovableObjectFactory for type 'ParticleSystem' registered.
+15:39:16: ArchiveFactory for archive type FileSystem registered.
+15:39:16: ArchiveFactory for archive type Zip registered.
+15:39:16: ArchiveFactory for archive type EmbeddedZip registered.
+15:39:16: DDS codec registering
+15:39:16: FreeImage version: 3.15.1
+15:39:16: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
+15:39:16: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi,exr,j2k,j2c,jp2,pfm,pct,pict,pic,3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,drf,dsc,dng,erf,fff,ia,iiq,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,ptx,pxn,qtk,raf,raw,rdc,rw2,rwl,rwz,sr2,srf,sti
+15:39:16: Registering ResourceManager for type HighLevelGpuProgram
+15:39:16: Registering ResourceManager for type Compositor
+15:39:16: MovableObjectFactory for type 'Entity' registered.
+15:39:16: MovableObjectFactory for type 'Light' registered.
+15:39:16: MovableObjectFactory for type 'BillboardSet' registered.
+15:39:16: MovableObjectFactory for type 'ManualObject' registered.
+15:39:16: MovableObjectFactory for type 'BillboardChain' registered.
+15:39:16: MovableObjectFactory for type 'RibbonTrail' registered.
+15:39:16: OGRE EXCEPTION(6:FileNotFoundException): 'plugins.cfg' file not found! in ConfigFile::load at /home/kazuo256/Tools/ogre/sinbad-ogre-dd30349ea667/OgreMain/src/OgreConfigFile.cpp (line 82)
+15:39:16: plugins.cfg not found, automatic plugin loading disabled.
+15:39:16: *-*-* OGRE Initialising
+15:39:16: *-*-* Version 1.9.0 (Ghadamon)
+15:39:16: Loading library /usr/local/lib/OGRE/RenderSystem_GL
+15:39:16: Installing plugin: GL RenderSystem
+15:39:16: OpenGL Rendering Subsystem created.
+15:39:17: Plugin successfully installed
+15:39:17: Loading library /usr/local/lib/OGRE/Plugin_OctreeSceneManager
+15:39:17: Installing plugin: Octree Scene Manager
+15:39:17: Plugin successfully installed
+15:39:17: OGRE EXCEPTION(6:FileNotFoundException): 'assets/resources.cfg' file not found! in ConfigFile::load at /home/kazuo256/Tools/ogre/sinbad-ogre-dd30349ea667/OgreMain/src/OgreConfigFile.cpp (line 82)
