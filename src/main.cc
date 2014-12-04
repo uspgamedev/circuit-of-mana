@@ -42,7 +42,7 @@ enum CollisionGroup {
 shared_ptr<bulletworks::Object> createOgreHead(const std::string& name, bool useBox=false) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     bulletworks::component::PhysicsBody::PhysicsData headData;
-    auto headEnt = mSceneMgr->createEntity(name, "Cube.mesh");
+    auto headEnt = mSceneMgr->createEntity(name, "ogrehead.mesh");
     auto meshShapeConv = BtOgre::StaticMeshToShapeConverter(headEnt);
     if (useBox)
         headData.shape = meshShapeConv.createBox();
@@ -54,7 +54,7 @@ shared_ptr<bulletworks::Object> createOgreHead(const std::string& name, bool use
     auto head = make_shared<bulletworks::Object>(*ourscene, headEnt);
     head->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), headData));
     head->AddToScene(ourscene);
-    head->body()->setDamping(.4, .4);
+    head->GetComponent<Body>()->setDamping(.4, .4);
     return head;
 }
 
@@ -78,7 +78,7 @@ shared_ptr<bulletworks::Object> createWall(const std::string& name, const Ogre::
     auto wall = make_shared<bulletworks::Object>(*ourscene, wallEnt);
     wall->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), wallData));
     wall->AddToScene(ourscene);
-    dynamic_cast<PhysicsBody*>(wall->GetComponent<Body>())->setFriction(1.7);
+    wall->GetComponent<Body>()->setFriction(1.7);
     return wall;
 }
 
@@ -91,54 +91,57 @@ int main(int argc, char* argv[]) {
     ourscene->physics_manager().set_debug_draw_enabled(true);
     ourscene->ShowFrameStats();
 
-    auto head1 = createOgreHead("Head");
-    auto head2 = createOgreHead("Head2", true);
-    auto body2 = dynamic_cast<PhysicsBody*>(head2->GetComponent<Body>());
-    body2->Translate(0, 0, 80);
-    body2->set_angular_factor(0.0, 0.0, 0.0);
+    {
 
-    ourscene->camera()->AttachTo(*head2);
-    ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
-    ourscene->camera()->SetDistance(10);
+        auto head1 = createOgreHead("Head");
+        auto head2 = createOgreHead("Head2", true);
+        auto body2 = head2->GetComponent<Body>();
+        body2->Translate(0, 0, 80);
+        body2->set_angular_factor(0.0, 0.0, 0.0);
 
-    auto floor = createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
+        ourscene->camera()->AttachTo(*head2);
+        ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
+        ourscene->camera()->SetDistance(100);
 
-    ourscene->AddTask(ugdk::system::Task(
-    [body2](double dt) {
-        auto& keyboard = ugdk::input::manager()->keyboard();
-        Ogre::Vector3 move = Ogre::Vector3::ZERO;
-        if (keyboard.IsDown(ugdk::input::Scancode::D))
-            move.x += 1.0;
-        else if (keyboard.IsDown(ugdk::input::Scancode::A))
-            move.x += -1.0;
-        if (keyboard.IsDown(ugdk::input::Scancode::W))
-            move.z += -1.0;
-        else if (keyboard.IsDown(ugdk::input::Scancode::S))
-            move.z += 1.0;
+        auto floor = createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
 
-        move.normalise();
-        move = ourscene->camera()->actual_orientation() * move;
-        move.y = 0.0;
-        move.normalise();
+        ourscene->AddTask(ugdk::system::Task(
+        [body2](double dt) {
+            auto& keyboard = ugdk::input::manager()->keyboard();
+            Ogre::Vector3 move = Ogre::Vector3::ZERO;
+            if (keyboard.IsDown(ugdk::input::Scancode::D))
+                move.x += 1.0;
+            else if (keyboard.IsDown(ugdk::input::Scancode::A))
+                move.x += -1.0;
+            if (keyboard.IsDown(ugdk::input::Scancode::W))
+                move.z += -1.0;
+            else if (keyboard.IsDown(ugdk::input::Scancode::S))
+                move.z += 1.0;
 
-        body2->Move((move * 10));
+            move.normalise();
+            move = ourscene->camera()->actual_orientation() * move;
+            move.normalise();
+
+            body2->Move((move * 10));
+        }
+        ));
+
+        ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
+            [head2] (const ugdk::input::KeyPressedEvent& ev) -> void {
+                if (ev.scancode == ugdk::input::Scancode::ESCAPE)
+                    ourscene->Finish();
+            });
+        ourscene->event_handler().AddListener<ugdk::input::MouseMotionEvent>(
+            [](const ugdk::input::MouseMotionEvent& ev) -> void {
+                ourscene->camera()->Rotate(-ev.motion.x, -ev.motion.y);
+            });
+
+        ourscene->manager()->setAmbientLight(Ogre::ColourValue(0.7, .7, .7));
+
+        ugdk::system::PushScene(unique_ptr<ugdk::action::Scene>(ourscene));
+        ugdk::system::Run();
     }
-    ));
 
-    ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
-        [head2] (const ugdk::input::KeyPressedEvent& ev) -> void {
-            if (ev.scancode == ugdk::input::Scancode::ESCAPE)
-                ourscene->Finish();
-        });
-    ourscene->event_handler().AddListener<ugdk::input::MouseMotionEvent>(
-        [](const ugdk::input::MouseMotionEvent& ev) -> void {
-            ourscene->camera()->Rotate(-ev.motion.x, -ev.motion.y);
-        });
-
-    ourscene->manager()->setAmbientLight(Ogre::ColourValue(.4, .4, .4));
-
-    ugdk::system::PushScene(unique_ptr<ugdk::action::Scene>(ourscene));
-    ugdk::system::Run();
     ugdk::system::Release();
     return 0;
 }
