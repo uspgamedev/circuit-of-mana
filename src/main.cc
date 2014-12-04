@@ -39,7 +39,7 @@ enum CollisionGroup {
     WAT4 = BIT(10)
 };
 
-bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) {
+shared_ptr<bulletworks::Object> createOgreHead(const std::string& name, bool useBox=false) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     bulletworks::component::PhysicsBody::PhysicsData headData;
     auto headEnt = mSceneMgr->createEntity(name, "Cube.mesh");
@@ -51,15 +51,14 @@ bulletworks::Object* createOgreHead(const std::string& name, bool useBox=false) 
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
-    auto head = new bulletworks::Object(*ourscene, headEnt);
+    auto head = make_shared<bulletworks::Object>(*ourscene, headEnt);
     head->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), headData));
     head->AddToScene(ourscene);
     head->body()->setDamping(.4, .4);
     return head;
 }
 
-bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& dir, double dist,
-                                double width = AREA_RANGE, double height = AREA_RANGE) {
+shared_ptr<bulletworks::Object> createWall(const std::string& name, const Ogre::Vector3& dir, double dist, double width = AREA_RANGE, double height = AREA_RANGE) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     Ogre::Plane plane(dir, dist);
 
@@ -76,10 +75,10 @@ bulletworks::Object* createWall(const std::string& name, const Ogre::Vector3& di
     wallData.mass = 0;
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
-    auto wall = new bulletworks::Object(*ourscene, wallEnt);
+    auto wall = make_shared<bulletworks::Object>(*ourscene, wallEnt);
     wall->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), wallData));
     wall->AddToScene(ourscene);
-    wall->body()->setFriction(1.7);
+    dynamic_cast<PhysicsBody*>(wall->GetComponent<Body>())->body()->setFriction(1.7);
     return wall;
 }
 
@@ -94,7 +93,7 @@ int main(int argc, char* argv[]) {
 
     auto head1 = createOgreHead("Head");
     auto head2 = createOgreHead("Head2", true);
-    auto body2 = head2->GetComponent<PhysicsBody>();
+    auto body2 = dynamic_cast<PhysicsBody*>(head2->GetComponent<Body>());
     body2->Translate(0, 0, 80);
     body2->set_angular_factor(0.0, 0.0, 0.0);
 
@@ -102,7 +101,7 @@ int main(int argc, char* argv[]) {
     ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
     ourscene->camera()->SetDistance(10);
 
-    createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
+    auto floor = createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
 
     ourscene->AddTask(ugdk::system::Task(
     [body2](double dt) {
