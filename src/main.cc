@@ -54,7 +54,7 @@ shared_ptr<bulletworks::Object> createOgreHead(const std::string& name, bool use
     auto head = make_shared<bulletworks::Object>(*ourscene, headEnt);
     head->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), headData));
     head->AddToScene(ourscene);
-    head->GetComponent<Body>()->setDamping(.4, .4);
+    head->component<Body>()->setDamping(.4, .4);
     return head;
 }
 
@@ -78,7 +78,7 @@ shared_ptr<bulletworks::Object> createWall(const std::string& name, const Ogre::
     auto wall = make_shared<bulletworks::Object>(*ourscene, wallEnt);
     wall->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), wallData));
     wall->AddToScene(ourscene);
-    wall->GetComponent<Body>()->setFriction(1.7);
+    wall->component<Body>()->setFriction(1.7);
     return wall;
 }
 
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 
         auto head1 = createOgreHead("Head");
         auto head2 = createOgreHead("Head2", true);
-        auto body2 = head2->GetComponent<Body>();
+        auto body2 = head2->component<Body>();
         body2->Translate(0, 0, 80);
         body2->set_angular_factor(0.0, 0.0, 0.0);
 
