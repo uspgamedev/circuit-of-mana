@@ -22,13 +22,15 @@
 
 #define AREA_RANGE 200.0
 
-using std::unique_ptr;
+using std::weak_ptr;
 using std::shared_ptr;
+using std::unique_ptr;
 using std::make_shared;
+using ugdk::action::mode3d::Element;
 using bulletworks::component::PhysicsBody;
 using bulletworks::component::Body;
 
-bulletworks::PhysicScene *ourscene;
+ugdk::action::mode3d::OgreScene *ourscene;
 
 #define BIT(x) (1<<(x))
 enum CollisionGroup {
@@ -39,7 +41,7 @@ enum CollisionGroup {
     WAT4 = BIT(10)
 };
 
-shared_ptr<bulletworks::Object> createOgreHead(const std::string& name, bool useBox=false) {
+shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     bulletworks::component::PhysicsBody::PhysicsData headData;
     auto headEnt = mSceneMgr->createEntity(name, "ogrehead.mesh");
@@ -51,14 +53,13 @@ shared_ptr<bulletworks::Object> createOgreHead(const std::string& name, bool use
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
-    auto head = make_shared<bulletworks::Object>(*ourscene, headEnt);
-    head->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), headData));
-    head->AddToScene(ourscene);
+    auto head = ourscene->AddElement();
+    head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics_manager(), headData));
     head->component<Body>()->setDamping(.4, .4);
     return head;
 }
 
-shared_ptr<bulletworks::Object> createWall(const std::string& name, const Ogre::Vector3& dir, double dist, double width = AREA_RANGE, double height = AREA_RANGE) {
+shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir, double dist, double width = AREA_RANGE, double height = AREA_RANGE) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     Ogre::Plane plane(dir, dist);
 
@@ -75,9 +76,8 @@ shared_ptr<bulletworks::Object> createWall(const std::string& name, const Ogre::
     wallData.mass = 0;
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
-    auto wall = make_shared<bulletworks::Object>(*ourscene, wallEnt);
-    wall->AddComponent(make_shared<PhysicsBody>(ourscene->physics_manager(), wallData));
-    wall->AddToScene(ourscene);
+    auto wall = ourscene->AddElement();
+    wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics_manager(), wallData));
     wall->component<Body>()->setFriction(1.7);
     return wall;
 }
@@ -86,15 +86,15 @@ int main(int argc, char* argv[]) {
     ugdk::system::Configuration config;
     config.base_path = "assets/";
     ugdk::system::Initialize(config);
-    ourscene = new bulletworks::PhysicScene(btVector3(0, -10, 0));
+    ourscene = new ugdk::action::mode3d::OgreScene;
     
-    ourscene->physics_manager().set_debug_draw_enabled(true);
+    ourscene->physics_manager()->set_debug_draw_enabled(true);
     ourscene->ShowFrameStats();
 
     {
 
-        std::weak_ptr<bulletworks::Object> head1 = createOgreHead("Head");
-        std::weak_ptr<bulletworks::Object> head2 = createOgreHead("Head2", true);
+        weak_ptr<Element> head1 = createOgreHead("Head");
+        weak_ptr<Element> head2 = createOgreHead("Head2", true);
         auto body2 = head2.lock()->component<Body>();
         body2->Translate(0, 0, 80);
         body2->set_angular_factor(0.0, 0.0, 0.0);
