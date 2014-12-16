@@ -3,11 +3,11 @@
 #include <ugdk/action/3D/camera.h>
 #include <ugdk/input/events.h>
 #include <ugdk/input/module.h>
-#include <bulletworks/object.h>
-#include <bulletworks/physicscene.h>
-#include <bulletworks/manager.h>
-#include <bulletworks/component/physicsbody.h>
-#include <bulletworks/component/view.h>
+#include <ugdk/action/3D/element.h>
+#include <ugdk/action/3D/scene3d.h>
+#include <ugdk/action/3D/physics.h>
+#include <ugdk/action/3D/component/physicsbody.h>
+#include <ugdk/action/3D/component/view.h>
 #include <BtOgreGP.h>
 #include <memory>
 
@@ -28,11 +28,11 @@ using std::shared_ptr;
 using std::unique_ptr;
 using std::make_shared;
 using ugdk::action::mode3d::Element;
-using bulletworks::component::PhysicsBody;
-using bulletworks::component::Body;
-using bulletworks::component::View;
+using ugdk::action::mode3d::component::PhysicsBody;
+using ugdk::action::mode3d::component::Body;
+using ugdk::action::mode3d::component::View;
 
-ugdk::action::mode3d::OgreScene *ourscene;
+ugdk::action::mode3d::Scene3D *ourscene;
 
 #define BIT(x) (1<<(x))
 enum CollisionGroup {
@@ -52,7 +52,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     head->AddComponent(make_shared<View>());
     head->component<View>()->AddEntity(headEnt);
     // Body
-    bulletworks::component::PhysicsBody::PhysicsData headData;
+    PhysicsBody::PhysicsData headData;
     auto meshShapeConv = BtOgre::StaticMeshToShapeConverter(headEnt);
     if (useBox)
         headData.shape = meshShapeConv.createBox();
@@ -61,7 +61,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
-    head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics_manager(), headData));
+    head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), headData));
     head->component<Body>()->setDamping(.4, .4);
     return head;
 }
@@ -80,12 +80,12 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     wall->AddComponent(make_shared<View>());
     wall->component<View>()->AddEntity(wallEnt);
     // Body
-    bulletworks::component::PhysicsBody::PhysicsData wallData;
+    PhysicsBody::PhysicsData wallData;
     wallData.shape = new btStaticPlaneShape(btVector3(dir.x, dir.y, dir.z), dist);
     wallData.mass = 0;
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
-    wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics_manager(), wallData));
+    wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), wallData));
     wall->component<Body>()->setFriction(1.7);
     return wall;
 }
@@ -94,9 +94,9 @@ int main(int argc, char* argv[]) {
     ugdk::system::Configuration config;
     config.base_path = "assets/";
     ugdk::system::Initialize(config);
-    ourscene = new ugdk::action::mode3d::OgreScene;
+    ourscene = new ugdk::action::mode3d::Scene3D;
     
-    ourscene->physics_manager()->set_debug_draw_enabled(true);
+    ourscene->physics()->set_debug_draw_enabled(true);
     ourscene->ShowFrameStats();
 
     {
