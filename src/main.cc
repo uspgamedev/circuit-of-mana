@@ -7,6 +7,7 @@
 #include <bulletworks/physicscene.h>
 #include <bulletworks/manager.h>
 #include <bulletworks/component/physicsbody.h>
+#include <bulletworks/component/view.h>
 #include <BtOgreGP.h>
 #include <memory>
 
@@ -29,6 +30,7 @@ using std::make_shared;
 using ugdk::action::mode3d::Element;
 using bulletworks::component::PhysicsBody;
 using bulletworks::component::Body;
+using bulletworks::component::View;
 
 ugdk::action::mode3d::OgreScene *ourscene;
 
@@ -43,8 +45,14 @@ enum CollisionGroup {
 
 shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
-    bulletworks::component::PhysicsBody::PhysicsData headData;
+    // Element
+    auto head = ourscene->AddElement();
+    // View
     auto headEnt = mSceneMgr->createEntity(name, "ogrehead.mesh");
+    head->AddComponent(make_shared<View>());
+    head->component<View>()->AddEntity(headEnt);
+    // Body
+    bulletworks::component::PhysicsBody::PhysicsData headData;
     auto meshShapeConv = BtOgre::StaticMeshToShapeConverter(headEnt);
     if (useBox)
         headData.shape = meshShapeConv.createBox();
@@ -53,7 +61,6 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
-    auto head = ourscene->AddElement();
     head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics_manager(), headData));
     head->component<Body>()->setDamping(.4, .4);
     return head;
@@ -61,22 +68,23 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
 
 shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir, double dist, double width = AREA_RANGE, double height = AREA_RANGE) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
+    // Element
+    auto wall = ourscene->AddElement();
+    // View
     Ogre::Plane plane(dir, dist);
-
-    Ogre::MeshManager::getSingleton().createPlane(
-                name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, width, height,
-                5, 5, true, 1, 5, 5, dir.perpendicular());
-
+    Ogre::MeshManager::getSingleton().createPlane(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        plane, width, height, 5, 5, true, 1, 5, 5, dir.perpendicular());
     const std::string wat = name + "Entity";
     Ogre::Entity* wallEnt = mSceneMgr->createEntity(wat, name);
     wallEnt->setMaterialName("Ogre/Tusks");
-    
+    wall->AddComponent(make_shared<View>());
+    wall->component<View>()->AddEntity(wallEnt);
+    // Body
     bulletworks::component::PhysicsBody::PhysicsData wallData;
     wallData.shape = new btStaticPlaneShape(btVector3(dir.x, dir.y, dir.z), dist);
     wallData.mass = 0;
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
-    auto wall = ourscene->AddElement();
     wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics_manager(), wallData));
     wall->component<Body>()->setFriction(1.7);
     return wall;
