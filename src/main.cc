@@ -10,6 +10,7 @@
 #include <ugdk/action/3D/component/view.h>
 #include <BtOgreGP.h>
 #include <memory>
+#include <iostream>
 
 #include <OgreCamera.h>
 #include <OgreEntity.h>
@@ -27,10 +28,13 @@ using std::weak_ptr;
 using std::shared_ptr;
 using std::unique_ptr;
 using std::make_shared;
+using std::cout;
+using std::endl;
 using ugdk::action::mode3d::Element;
 using ugdk::action::mode3d::component::PhysicsBody;
 using ugdk::action::mode3d::component::Body;
 using ugdk::action::mode3d::component::View;
+using ugdk::action::mode3d::component::CollisionAction;
 
 ugdk::action::mode3d::Scene3D *ourscene;
 
@@ -100,19 +104,23 @@ int main(int argc, char* argv[]) {
     ourscene->ShowFrameStats();
 
     {
-
         weak_ptr<Element> head1 = createOgreHead("Head");
         weak_ptr<Element> head2 = createOgreHead("Head2", true);
         auto body2 = head2.lock()->component<Body>();
         body2->Translate(0, 0, 80);
         body2->set_angular_factor(0.0, 0.0, 0.0);
 
+        body2->AddCollisionAction(CollisionGroup::HEADS, 
+        [](const shared_ptr<Element>& self, const shared_ptr<Element>& target, const btManifoldPoint& pt) {
+            cout << "CARAS COLIDINDO MANO" << endl;
+        });
+
         ourscene->camera()->AttachTo(*head2.lock());
         ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
         ourscene->camera()->SetDistance(100);
 
         createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
-
+        
         ourscene->AddTask(ugdk::system::Task(
         [body2](double dt) {
             auto& keyboard = ugdk::input::manager()->keyboard();
