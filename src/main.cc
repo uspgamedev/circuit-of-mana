@@ -35,6 +35,8 @@ using ugdk::action::mode3d::component::PhysicsBody;
 using ugdk::action::mode3d::component::Body;
 using ugdk::action::mode3d::component::View;
 using ugdk::action::mode3d::component::CollisionAction;
+using ugdk::action::mode3d::component::ElementPtr;
+using ugdk::action::mode3d::component::ManifoldPointVector;
 
 ugdk::action::mode3d::Scene3D *ourscene;
 
@@ -110,9 +112,9 @@ int main(int argc, char* argv[]) {
         body2->Translate(0, 0, 80);
         body2->set_angular_factor(0.0, 0.0, 0.0);
 
-        body2->AddCollisionAction(CollisionGroup::HEADS, 
-        [](const shared_ptr<Element>& self, const shared_ptr<Element>& target, const btManifoldPoint& pt) {
-            cout << "CARAS COLIDINDO MANO" << endl;
+        body2->AddCollisionAction(CollisionGroup::WALLS, 
+        [](const ElementPtr& self, const ElementPtr& target, const ManifoldPointVector& pts) {
+            cout << "CARAS COLIDINDO MANO (" << pts.size() << ")" << endl;
         });
 
         ourscene->camera()->AttachTo(*head2.lock());
