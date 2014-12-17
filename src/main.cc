@@ -54,7 +54,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     // Element
     auto head = ourscene->AddElement();
     // View
-    auto headEnt = mSceneMgr->createEntity(name, "ogrehead.mesh");
+    auto headEnt = mSceneMgr->createEntity(name, "Cube.mesh");
     head->AddComponent(make_shared<View>());
     head->component<View>()->AddEntity(headEnt);
     // Body
@@ -68,7 +68,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
     head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), headData));
-    head->component<Body>()->setDamping(.4, .4);
+    head->component<Body>()->set_damping(.4, .4);
     return head;
 }
 
@@ -92,7 +92,7 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
     wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), wallData));
-    wall->component<Body>()->setFriction(1.7);
+    wall->component<Body>()->set_friction(1.7);
     return wall;
 }
 
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
         body2->Translate(0, 0, 80);
         body2->set_angular_factor(0.0, 0.0, 0.0);
 
-        body2->AddCollisionAction(CollisionGroup::WALLS, 
+        body2->AddCollisionAction(CollisionGroup::HEADS, 
         [](const ElementPtr& self, const ElementPtr& target, const ManifoldPointVector& pts) {
             cout << "CARAS COLIDINDO MANO (" << pts.size() << ")" << endl;
         });
@@ -138,6 +138,7 @@ int main(int argc, char* argv[]) {
 
             move.normalise();
             move = ourscene->camera()->actual_orientation() * move;
+            move.y = 0.0;
             move.normalise();
 
             body2->Move((move * 10));
