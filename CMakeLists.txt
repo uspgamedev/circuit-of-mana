@@ -34,6 +34,11 @@ add_custom_target (
 
 add_subdirectory(${UGDK_SUBDIR})
 
+CONFIGURE_FILE(
+    "doxystuff/Doxyfile.in"
+    "doxystuff/Doxyfile"
+)
+
 configure_file(cmake/plugins.cfg src/assets/plugins.cfg)
 configure_file(cmake/plugins_d.cfg src/assets/plugins_d.cfg)
 configure_file(cmake/resources.cfg src/assets/resources.cfg)
