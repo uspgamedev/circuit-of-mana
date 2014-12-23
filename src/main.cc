@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     ugdk::system::Configuration config;
     config.base_path = "assets/";
     ugdk::system::Initialize(config);
-    ourscene = new ugdk::action::mode3d::Scene3D;
+    ourscene = new ugdk::action::mode3d::Scene3D(btVector3(0.0, -10.0, 0.0));
     
     ourscene->physics()->set_debug_draw_enabled(true);
     ourscene->ShowFrameStats();
