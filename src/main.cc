@@ -36,7 +36,7 @@ using ugdk::action::mode3d::component::Body;
 using ugdk::action::mode3d::component::View;
 using ugdk::action::mode3d::component::CollisionAction;
 using ugdk::action::mode3d::component::ElementPtr;
-using ugdk::action::mode3d::component::ManifoldPointVector;
+using ugdk::action::mode3d::component::ContactPointVector;
 
 ugdk::action::mode3d::Scene3D *ourscene;
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
         body2->set_angular_factor(0.0, 0.0, 0.0);
 
         body2->AddCollisionAction(CollisionGroup::HEADS, 
-        [](const ElementPtr& self, const ElementPtr& target, const ManifoldPointVector& pts) {
+        [](const ElementPtr& self, const ElementPtr& target, const ContactPointVector& pts) {
             cout << "CARAS COLIDINDO MANO (" << pts.size() << ")" << endl;
         });
 
@@ -128,20 +128,20 @@ int main(int argc, char* argv[]) {
             auto& keyboard = ugdk::input::manager()->keyboard();
             Ogre::Vector3 move = Ogre::Vector3::ZERO;
             if (keyboard.IsDown(ugdk::input::Scancode::D))
-                move.x += 1.0;
-            else if (keyboard.IsDown(ugdk::input::Scancode::A))
                 move.x += -1.0;
+            else if (keyboard.IsDown(ugdk::input::Scancode::A))
+                move.x += 1.0;
             if (keyboard.IsDown(ugdk::input::Scancode::W))
-                move.z += -1.0;
-            else if (keyboard.IsDown(ugdk::input::Scancode::S))
                 move.z += 1.0;
+            else if (keyboard.IsDown(ugdk::input::Scancode::S))
+                move.z += -1.0;
 
             move.normalise();
             move = ourscene->camera()->actual_orientation() * move;
             move.y = 0.0;
             move.normalise();
 
-            body2->Move((move * 10));
+            body2->ApplyImpulse((move * 50));
         }));
 
         ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
             });
         ourscene->event_handler().AddListener<ugdk::input::MouseMotionEvent>(
             [] (const ugdk::input::MouseMotionEvent& ev) -> void {
-                ourscene->camera()->Rotate(-ev.motion.x, -ev.motion.y);
+                ourscene->camera()->Rotate(-ev.motion.x, ev.motion.y);
             });
 
         ourscene->manager()->setAmbientLight(Ogre::ColourValue(0.7, .7, .7));
