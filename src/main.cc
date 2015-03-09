@@ -78,10 +78,10 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     auto wall = ourscene->AddElement();
     // View
     Ogre::Plane plane(dir, dist);
-    Ogre::MeshManager::getSingleton().createPlane(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    auto mesh_ptr = Ogre::MeshManager::getSingleton().createPlane(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
         plane, width, height, 5, 5, true, 1, 5, 5, dir.perpendicular());
     const std::string wat = name + "Entity";
-    Ogre::Entity* wallEnt = mSceneMgr->createEntity(wat, name);
+    Ogre::Entity* wallEnt = mSceneMgr->createEntity(wat, mesh_ptr);
     wallEnt->setMaterialName("Ogre/Tusks");
     wall->AddComponent(make_shared<View>());
     wall->component<View>()->AddEntity(wallEnt);
