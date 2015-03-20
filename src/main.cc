@@ -54,7 +54,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     // Element
     auto head = ourscene->AddElement();
     // View
-    auto headEnt = mSceneMgr->createEntity(name, "Cube.mesh");
+    auto headEnt = mSceneMgr->createEntity(name, "Mage.mesh");
     head->AddComponent(make_shared<View>());
     head->component<View>()->AddEntity(headEnt);
     // Body
