@@ -67,6 +67,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     headData.mass = 80;
     headData.collision_group = CollisionGroup::HEADS;
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
+    headData.apply_orientation = false;
     head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), headData));
     head->component<Body>()->set_damping(.4, .4);
     return head;
@@ -92,7 +93,7 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
     wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), wallData));
-    wall->component<Body>()->set_friction(1.7);
+    wall->component<Body>()->set_friction(5);
     return wall;
 }
 
@@ -119,7 +120,7 @@ int main(int argc, char* argv[]) {
 
         ourscene->camera()->AttachTo(*head2.lock());
         ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
-        ourscene->camera()->SetDistance(100);
+        ourscene->camera()->SetDistance(50);
 
         createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
         
