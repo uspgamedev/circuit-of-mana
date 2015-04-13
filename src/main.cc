@@ -118,14 +118,14 @@ int main(int argc, char* argv[]) {
             cout << "CARAS COLIDINDO MANO (" << pts.size() << ")" << endl;
         });
 
-        ourscene->camera()->AttachTo(*head2.lock());
-        ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
-        ourscene->camera()->SetDistance(50);
+        weak_ptr<Element> wall = createWall("ground", Ogre::Vector3::UNIT_Y, -5.0);
 
-        createWall("ground", Ogre::Vector3::UNIT_Y, -(AREA_RANGE / 2));
+        ourscene->camera()->AttachTo(*wall.lock());
+        ourscene->camera()->SetParameters(Ogre::Vector3::ZERO, 5000);
+        ourscene->camera()->SetDistance(100);
         
         ourscene->AddTask(ugdk::system::Task(
-        [body2](double dt) {
+        [head2, body2](double dt) {
             auto& keyboard = ugdk::input::manager()->keyboard();
             Ogre::Vector3 move = Ogre::Vector3::ZERO;
             if (keyboard.IsDown(ugdk::input::Scancode::D))
@@ -143,6 +143,12 @@ int main(int argc, char* argv[]) {
             move.normalise();
 
             body2->ApplyImpulse((move * 50));
+            auto &node = head2.lock()->node();
+            if (!move.isZeroLength()) {
+                auto rot = move.getRotationTo(Ogre::Vector3::UNIT_Z);
+                rot.w *= -1;
+                node.setOrientation(rot);
+            }
         }));
 
         ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
@@ -155,7 +161,7 @@ int main(int argc, char* argv[]) {
                 ourscene->camera()->Rotate(-ev.motion.x, ev.motion.y);
             });
 
-        ourscene->manager()->setAmbientLight(Ogre::ColourValue(0.7, .7, .7));
+        ourscene->manager()->setAmbientLight(Ogre::ColourValue(.7, .7, .7));
 
         ugdk::system::PushScene(unique_ptr<ugdk::action::Scene>(ourscene));
 
