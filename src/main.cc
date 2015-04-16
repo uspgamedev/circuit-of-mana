@@ -77,7 +77,7 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
     headData.apply_orientation = false;
     head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), headData));
-    head->component<Body>()->set_damping(.4, .4);
+    head->component<Body>()->set_damping(.8, .8);
     return head;
 }
 
@@ -101,7 +101,7 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
     wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), wallData));
-    wall->component<Body>()->set_friction(10);
+    wall->component<Body>()->set_friction(20);
     return wall;
 }
 
@@ -141,9 +141,9 @@ int main(int argc, char* argv[]) {
             auto& keyboard = ugdk::input::manager()->keyboard();
             Vector3 move = Vector3::ZERO;
             if (keyboard.IsDown(ugdk::input::Scancode::RIGHT))
-                player.angle -= dt*90.0;
+                player.angle -= dt*135.0;
             else if (keyboard.IsDown(ugdk::input::Scancode::LEFT))
-                player.angle += dt*90.0;
+                player.angle += dt*135.0;
             if (keyboard.IsDown(ugdk::input::Scancode::UP))
                 move.z += 1.0;
             else if (keyboard.IsDown(ugdk::input::Scancode::DOWN))
@@ -155,11 +155,9 @@ int main(int argc, char* argv[]) {
             move.y = 0.0;
             move.normalise();
 
-            body2->ApplyImpulse((move * 80));
+            body2->ApplyImpulse(move * 200);
             Ogre::SceneNode &node = head2.lock()->node();
             node.setOrientation(rot);
-            // Now update camera
-            Ogre::SceneNode &cam_node = ourscene->camera()->node();
         }));
 
         ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
