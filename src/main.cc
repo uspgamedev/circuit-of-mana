@@ -77,18 +77,20 @@ shared_ptr<Element> createOgreHead(const std::string& name, bool useBox=false) {
     headData.collides_with = CollisionGroup::WALLS | CollisionGroup::HEADS;
     headData.apply_orientation = false;
     head->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), headData));
-    head->component<Body>()->set_damping(.8, .8);
+    //head->component<Body>()->set_damping(.4, .4);
     return head;
 }
 
-shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir, double dist, double width = AREA_RANGE, double height = AREA_RANGE) {
+shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir, double dist,
+                               double width = AREA_RANGE, double height = AREA_RANGE) {
     Ogre::SceneManager *mSceneMgr = ourscene->manager();
     // Element
     auto wall = ourscene->AddElement();
     // View
     Ogre::Plane plane(dir, dist);
-    auto mesh_ptr = Ogre::MeshManager::getSingleton().createPlane(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        plane, width, height, 5, 5, true, 1, 5, 5, dir.perpendicular());
+    auto mesh_ptr = Ogre::MeshManager::getSingleton()
+            .createPlane(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                         plane, width, height, 5, 5, true, 1, 5, 5, dir.perpendicular());
     const std::string wat = name + "Entity";
     Ogre::Entity* wallEnt = mSceneMgr->createEntity(wat, mesh_ptr);
     wallEnt->setMaterialName("Ogre/Tusks");
@@ -101,7 +103,7 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
     wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), wallData));
-    wall->component<Body>()->set_friction(20);
+    //wall->component<Body>()->set_friction(30);
     return wall;
 }
 
@@ -132,8 +134,8 @@ int main(int argc, char* argv[]) {
         weak_ptr<Element> wall = createWall("ground", Vector3::UNIT_Y, -5.0);
 
         ourscene->camera()->AttachTo(*head2.lock());
-        ourscene->camera()->SetParameters(Vector3::UNIT_Y*10.0, 5000.0);
-        ourscene->camera()->SetDistance(80.0);
+        ourscene->camera()->SetParameters(Vector3::UNIT_Y*2.0, 5000.0);
+        ourscene->camera()->SetDistance(10.0);
         ourscene->camera()->Rotate(0.0, Ogre::Degree(20.0).valueDegrees());
         
         ourscene->AddTask(ugdk::system::Task(
@@ -155,15 +157,18 @@ int main(int argc, char* argv[]) {
             move.y = 0.0;
             move.normalise();
 
-            body2->ApplyImpulse(move * 200);
+            //body2->ApplyImpulse(move * 200);
+            body2->Translate(move * dt * 5);
             Ogre::SceneNode &node = head2.lock()->node();
             node.setOrientation(rot);
         }));
 
         ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
-            [] (const ugdk::input::KeyPressedEvent& ev) -> void {
+            [body2] (const ugdk::input::KeyPressedEvent& ev) -> void {
                 if (ev.scancode == ugdk::input::Scancode::ESCAPE)
                     ourscene->Finish();
+                else if (ev.scancode == ugdk::input::Scancode::A)
+                    body2->ApplyImpulse(Vector3::UNIT_Y * 500.0);
             });
         //ourscene->event_handler().AddListener<ugdk::input::MouseMotionEvent>(
         //    [] (const ugdk::input::MouseMotionEvent& ev) -> void {
