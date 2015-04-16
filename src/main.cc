@@ -101,7 +101,7 @@ shared_ptr<Element> createWall(const std::string& name, const Ogre::Vector3& dir
     wallData.collision_group = CollisionGroup::WALLS;
     wallData.collides_with = CollisionGroup::HEADS;
     wall->AddComponent(make_shared<PhysicsBody>(*ourscene->physics(), wallData));
-    wall->component<Body>()->set_friction(5);
+    wall->component<Body>()->set_friction(10);
     return wall;
 }
 
@@ -132,20 +132,21 @@ int main(int argc, char* argv[]) {
         weak_ptr<Element> wall = createWall("ground", Vector3::UNIT_Y, -5.0);
 
         ourscene->camera()->AttachTo(*head2.lock());
-        ourscene->camera()->SetParameters(Vector3(0.0, 5.0, 10.0), 5000);
-        ourscene->camera()->SetDistance(100);
+        ourscene->camera()->SetParameters(Vector3::UNIT_Y*10.0, 5000.0);
+        ourscene->camera()->SetDistance(80.0);
+        ourscene->camera()->Rotate(0.0, Ogre::Degree(20.0).valueDegrees());
         
         ourscene->AddTask(ugdk::system::Task(
         [head2, body2](double dt) {
             auto& keyboard = ugdk::input::manager()->keyboard();
             Vector3 move = Vector3::ZERO;
-            if (keyboard.IsDown(ugdk::input::Scancode::D))
+            if (keyboard.IsDown(ugdk::input::Scancode::RIGHT))
                 player.angle -= dt*90.0;
-            else if (keyboard.IsDown(ugdk::input::Scancode::A))
+            else if (keyboard.IsDown(ugdk::input::Scancode::LEFT))
                 player.angle += dt*90.0;
-            if (keyboard.IsDown(ugdk::input::Scancode::W))
+            if (keyboard.IsDown(ugdk::input::Scancode::UP))
                 move.z += 1.0;
-            else if (keyboard.IsDown(ugdk::input::Scancode::S))
+            else if (keyboard.IsDown(ugdk::input::Scancode::DOWN))
                 move.z += -1.0;
 
             Ogre::Quaternion rot(Ogre::Degree(player.angle), Vector3::UNIT_Y);
@@ -154,10 +155,11 @@ int main(int argc, char* argv[]) {
             move.y = 0.0;
             move.normalise();
 
-            body2->ApplyImpulse((move * 50));
-            auto &node = head2.lock()->node();
-            //rot.w *= -1;
+            body2->ApplyImpulse((move * 80));
+            Ogre::SceneNode &node = head2.lock()->node();
             node.setOrientation(rot);
+            // Now update camera
+            Ogre::SceneNode &cam_node = ourscene->camera()->node();
         }));
 
         ourscene->event_handler().AddListener<ugdk::input::KeyPressedEvent>(
